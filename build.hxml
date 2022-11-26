@@ -1,0 +1,5 @@
+-cp source
+-cp src
+-cpp dist/cpp/
+-main Main
+--cmd ./dist/cpp/Main
