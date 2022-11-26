@@ -1,8 +1,50 @@
-import Rl.Color;
+import Rl;
+import Core;
+import Controller;
 
 class Main {
+	static var game:Game;
+
 	static function main() {
-		Rl.setTargetFPS(60);
+		Rl.initWindow(640, 480, "ray");
+		
+		// using VSYNC_HINT is better than setTargetFPS as it will use the GPU as a source for timing, which is more reliable
+		// more info here - https://bedroomcoders.co.uk/why-you-shouldnt-use-settargetfps-with-raylib/
+		// it should result in less CPU and less screen tearing
+		Rl.setWindowState(Rl.ConfigFlags.VSYNC_HINT);
+		// Rl.setTargetFPS(60);
+
+		game = new Game(game -> {
+			return new TestScene(game);
+		});
+
+		while (!Rl.windowShouldClose()) {
+			game.update(Rl.getFrameTime());
+			Rl.beginDrawing();
+			Rl.clearBackground(Rl.Colors.WHITE);
+			game.draw();
+
+			/*
+				By default, Rl.endDrawing() calls the following processes:
+				* 1. Draw remaining batch data: rlDrawRmain_loop_enderBatchActive()
+				* 2. SwapScreenBuffer()
+				* 3. Frame time control: WaitTime()
+				* 4. PollInputEvents()
+			 */
+			Rl.endDrawing();
+		}
+
+		Rl.closeWindow();
+	}
+}
+
+
+class TestScene extends Scene {
+
+	static var controller:Controller;
+	static var player:Player;
+
+	public function init() {
 
 		player = new Player(40, 60);
 
@@ -12,28 +54,21 @@ class Main {
 			on_move_up: () -> player.move(0, -1),
 			on_move_down: () -> player.move(0, 1)
 		});
-
-		Rl.initWindow(640, 480, "ray");
-
-		while (!Rl.windowShouldClose()) {
-			controller.update();
-			Rl.beginDrawing();
-			Rl.clearBackground(Rl.Colors.WHITE);
-			player.draw();
-			Rl.endDrawing();
-		}
-
-		Rl.closeWindow();
 	}
 
-	static var controller:Controller;
-
-	static var player:Player;
+	public function update(elapsed_seconds:Float) {
+		controller.update();
+	}
+	
+	public function draw() {
+		player.draw();
+	}
 }
 
 class Player {
 	var x:Int;
 	var y:Int;
+
 	public var size:Int = 50;
 	public var color:Color = Rl.Colors.DARKPURPLE;
 	public var speed:Int = 5;
@@ -50,56 +85,5 @@ class Player {
 	public function move(x_direction:Int, y_direction:Int) {
 		x += x_direction * speed;
 		y += y_direction * speed;
-	}
-}
-
-@:structInit
-class ControllerActions {
-	public var on_move_left:Void->Void = () -> return;
-	public var on_move_right:Void->Void = () -> return;
-	public var on_move_up:Void->Void = () -> return;
-	public var on_move_down:Void->Void = () -> return;
-}
-
-class Controller {
-	var actions:ControllerActions;
-
-	public function new(actions:ControllerActions) {
-		this.actions = actions;
-	}
-
-	public function update() {
-		switch Rl.getKeyPressed() {
-			case Rl.Keys.RIGHT:
-				move_right();
-			case Rl.Keys.LEFT:
-				move_left();
-			case Rl.Keys.UP:
-				move_up();
-			case Rl.Keys.DOWN:
-				move_down();
-			case _:
-				return;
-		}
-	}
-
-	function move_right() {
-		trace("right");
-		actions.on_move_right();
-	}
-
-	function move_left() {
-		trace("left");
-		actions.on_move_left();
-	}
-
-	function move_up() {
-		trace("up");
-		actions.on_move_up();
-	}
-
-	function move_down() {
-		trace("down");
-		actions.on_move_down();
 	}
 }
