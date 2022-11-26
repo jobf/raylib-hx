@@ -58,6 +58,7 @@ class TestScene extends Scene {
 
 	public function update(elapsed_seconds:Float) {
 		controller.update();
+		player.update(elapsed_seconds);
 	}
 	
 	public function draw() {
@@ -68,14 +69,23 @@ class TestScene extends Scene {
 class Player {
 	var x:Int;
 	var y:Int;
+	var x_vel:Float = 0.0;
+	var y_vel:Float = 0.0;
+	var x_vel_increment:Float = 50.0;
+	var y_vel_increment:Float = 50.0;
 
 	public var size:Int = 50;
 	public var color:Color = Rl.Colors.DARKPURPLE;
-	public var speed:Int = 5;
 
 	public function new(x:Int, y:Int) {
 		this.x = x;
 		this.y = y;
+	}
+
+	public function update(elapsed_seconds:Float){
+		x += Math.ceil(x_vel * elapsed_seconds);
+		y += Math.ceil(y_vel * elapsed_seconds);
+		// trace('$elapsed_seconds $x $y');
 	}
 
 	public function draw() {
@@ -83,7 +93,8 @@ class Player {
 	}
 
 	public function move(x_direction:Int, y_direction:Int) {
-		x += x_direction * speed;
-		y += y_direction * speed;
+		x_vel += x_direction * x_vel_increment;
+		y_vel += y_direction * y_vel_increment;
+		trace('new velocities $x_vel $y_vel');
 	}
 }
